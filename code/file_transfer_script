@@ -1,0 +1,45 @@
+#!/bin/bash
+
+module load jaspy
+module load jasmin-sci
+
+
+#===== EDIT HERE  =====#
+
+var='cl' # CMIP6 variable name
+tableID='Amon' # Amon, Omon, SImon etc...
+model='HadGEM3-GC31-LL' # full model name
+model_group='MOHC' # modelling group name
+MIP='CMIP' # name of the MIP
+exp='historical' # name of the experiment within the MIP
+
+
+#==========================================================================================================#
+
+
+src_dir=/badc/cmip6/data/CMIP6/${MIP}/${model_group}/${model}/${exp}/
+
+# find all ensemble versions (for looping)
+ENS_PATHS=$(find $src_dir -type d -name "r*i1*" | cut -d / -f 1-10)
+
+# create array of ensemble names
+mapfile -t ENS_NAME_array < <( find $src_dir -type d -name "r*i1*" | cut -d / -f 10 )
+
+c=0
+
+for i in $ENS_PATHS; do
+
+        cd $src_dir/${ENS_NAME_array[c]}/${tableID}/${var}/gn/files/*/
+        echo $PWD
+
+        # save directory on the hackathon group workspace (edit this for different project)
+        save_dir=/gws/pw/j05/cop26_hackathons/bristol/project07/${MIP}/${exp}/${var}/${model}/${ENS_NAME_array[c]}/
+
+        if [ ! -d $save_dir ]; then
+                mkdir -p $save_dir
+        fi
+
+        cp *.nc $save_dir
+
+        c=$((c+1))
+done
